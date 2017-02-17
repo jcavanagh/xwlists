@@ -139,7 +139,8 @@ def maintenance():
 
 @app.route('/')
 def index():
-    return render_template( 'search_versus.html')
+    # return render_template( 'search_versus.html')
+    return render_template('index.html')
 
 @app.route("/about")
 def about():

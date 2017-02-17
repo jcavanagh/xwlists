@@ -1,0 +1,77 @@
+var webpack = require('webpack'),
+    path = require('path'),
+    merge = require('lodash/merge');
+
+function output(filename) {
+  return {
+    path: path.join(__dirname, '/static'),
+    filename,
+    library: ['xwlists'],
+    libraryTarget: 'umd',
+    publicPath: '/static/'
+  };
+}
+
+const NODE_ENV = JSON.stringify(process.env.NODE_ENV) || 'development';
+var env = {'process.env': {NODE_ENV}};
+
+var loaders = [{
+  test: /\.(jsx|js|es)$/,
+  loaders: ['babel-loader'],
+  include: path.join(process.cwd(), 'ui')
+},{
+  test: require.resolve("react-dom"),
+  loader: "expose?ReactDOM"
+}];
+
+var configs = {
+  production: {
+    devtool: 'none',
+    entry: [
+      './ui/xwlists.js'
+    ],
+    output: output('xwlists.min.js'),
+    plugins: [
+      new webpack.DefinePlugin(env),
+      new webpack.optimize.UglifyJsPlugin({
+        compress: {warnings: false}
+      }),
+      new webpack.optimize.OccurrenceOrderPlugin(),
+      new webpack.optimize.DedupePlugin()
+    ],
+    module: {
+      loaders
+    },
+    stats: {children: false}
+  },
+
+  development: {
+    devtool: 'source-map',
+    plugins: [
+      new webpack.DefinePlugin(env),
+      new webpack.HotModuleReplacementPlugin(),
+      new webpack.NoEmitOnErrorsPlugin()
+    ],
+    entry: [
+      'webpack-hot-middleware/client?reload=true&noInfo=true',
+      './ui/xwlists.js'
+    ],
+    output: output("xwlists.dev.js"),
+    module: {
+      loaders
+    }
+  }
+}
+
+var shared = {
+  cache: true,
+  externals: {
+    React: 'react',
+    ReactDOM: 'react-dom'
+  },
+  resolve: {
+    extensions: ['.js', '.jsx', '.es', '.json']
+  }
+};
+
+module.exports = merge({}, shared, configs[NODE_ENV]);
