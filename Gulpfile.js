@@ -1,4 +1,5 @@
-const webpackPort = 4444;
+//Webpack/dev server configuration
+const webpackPort = 8080;
 const webpackConfigPath = 'webpack.config.js';
 
 //Pull environment from .env
@@ -14,10 +15,15 @@ const gulp = require('gulp'),
       WebpackDevServer = require('webpack-dev-server');
 
 gulp.task('webpack', ['xwlists'], (callback) => {
-    new WebpackDevServer(webpack(webpackConfig)).listen(8080, 'localhost', function(err) {
+    new WebpackDevServer(webpack(webpackConfig), {
+        hot: true,
+        contentBase: path.join(__dirname, 'static'),
+    }).listen(webpackPort, 'localhost', function(err) {
         if(err) throw new gutil.PluginError('webpack', err);
         callback();
     });
+
+    console.log(`Webpack dev server listening on ${webpackPort}`);
 });
 
 gulp.task('xwlists', (callback) => {
