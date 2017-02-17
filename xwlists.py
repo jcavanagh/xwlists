@@ -137,7 +137,8 @@ def check_for_maintenance():
 def maintenance():
     return 'List Juggler is down for some database maintenance, we should we back shortly, may the force be with you!', 503
 
-@app.route('/')
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
 def index():
     # return render_template( 'search_versus.html')
     return render_template('index.html')

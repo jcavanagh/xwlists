@@ -3,7 +3,7 @@ var webpack = require('webpack'),
     merge = require('lodash/merge');
 
 const NODE_ENV = JSON.stringify(process.env.NODE_ENV) || 'development';
-var env = {'process.env': {NODE_ENV}};
+var env = {'process.env': {NODE_ENV: NODE_ENV}};
 
 var loaders = [{
   test: /\.(jsx|js|es)$/,
@@ -11,7 +11,7 @@ var loaders = [{
   include: path.join(process.cwd(), 'ui')
 },{
   test: require.resolve("react-dom"),
-  loader: "expose?ReactDOM"
+  loader: "expose-loader?ReactDOM"
 }];
 
 var configs = {
@@ -21,7 +21,7 @@ var configs = {
       bundle: ['./ui/xwlists.js']
     },
     plugins: [
-      new webpack.DefinePlugin(env),
+      // new webpack.DefinePlugin(env),
       new webpack.optimize.UglifyJsPlugin({
         compress: {warnings: false}
       }),
@@ -37,7 +37,7 @@ var configs = {
   development: {
     devtool: 'source-map',
     plugins: [
-      new webpack.DefinePlugin(env),
+      // new webpack.DefinePlugin(env),
       new webpack.HotModuleReplacementPlugin(),
       new webpack.NoEmitOnErrorsPlugin()
     ],
@@ -65,6 +65,7 @@ var shared = {
     ReactDOM: 'react-dom'
   },
   resolve: {
+    modules: [path.resolve('./node_modules'), path.resolve('./ui')],
     extensions: ['.js', '.jsx', '.es', '.json']
   }
 };
