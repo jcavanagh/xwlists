@@ -7,3 +7,5 @@
 node_modules
 static/bundle.js
 static/xwlists.dev.js*
+
+.DS_Store

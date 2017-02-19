@@ -137,15 +137,20 @@ def check_for_maintenance():
 def maintenance():
     return 'List Juggler is down for some database maintenance, we should we back shortly, may the force be with you!', 503
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
+@app.route('/')
+@app.route('/about')
+@app.route('/heatmap')
+@app.route('/league')
+@app.route('/new')
+@app.route('/search')
+@app.route('/time_series')
+@app.route('/tourneys')
 def index():
     # return render_template( 'search_versus.html')
     return render_template('index.html')
 
-@app.route("/about")
-def about():
-    return render_template('about.html')
+# def about():
+#     return render_template('about.html')
 
 @app.route("/fix_archtype_keys")
 def regenerate_archtype_keys():
@@ -1126,9 +1131,9 @@ def escrow_list_url():
             return response
 
 
-@app.route("/search")
-def versus():
-    return render_template("search_versus.html", url_root=request.url_root)
+# @app.route("/search")
+# def versus():
+#     return render_template("search_versus.html", url_root=request.url_root)
 
 
 @app.route("/search_guide")
@@ -1205,15 +1210,15 @@ def tourney_admin():
     tourneys = PersistenceManager(myapp.db_connector).get_tourneys()
     return render_template("tourney_admin.html", tourneys=tourneys)
 
-@app.route("/tourneys")
-def tourneys():
-    admin_on = request.args.get('admin')
-    if admin_on is not None:
-        admin_on = True
-    else:
-        admin_on = False
-    tourneys = PersistenceManager(myapp.db_connector).get_tourneys()
-    return render_template('tourneys.html', tourneys=tourneys, admin=admin_on )
+# @app.route("/tourneys")
+# def tourneys():
+#     admin_on = request.args.get('admin')
+#     if admin_on is not None:
+#         admin_on = True
+#     else:
+#         admin_on = False
+#     tourneys = PersistenceManager(myapp.db_connector).get_tourneys()
+#     return render_template('tourneys.html', tourneys=tourneys, admin=admin_on )
 
 @app.route("/tourney_results")
 def get_tourney_results():
@@ -2133,57 +2138,57 @@ def pretty_print():
     pm.db_connector.get_session().commit()
     return redirect(url_for('archtypes') )
 
-@app.route("/time_series")
-def time_series():
-    venue_id         = request.args.get('venue_id')
-    pm               = PersistenceManager(myapp.db_connector)
-    pcd              = ShipPilotTimeSeriesData( pm,
-                                                venue_id=venue_id,
-                                                calculate_upgrades=True )
-    venue_name = ""
-    if venue_id is not None:
-        venue = pm.get_venue_by_id(venue_id)
-        venue_name = venue.get_name()
+# @app.route("/time_series")
+# def time_series():
+#     venue_id         = request.args.get('venue_id')
+#     pm               = PersistenceManager(myapp.db_connector)
+#     pcd              = ShipPilotTimeSeriesData( pm,
+#                                                 venue_id=venue_id,
+#                                                 calculate_upgrades=True )
+#     venue_name = ""
+#     if venue_id is not None:
+#         venue = pm.get_venue_by_id(venue_id)
+#         venue_name = venue.get_name()
 
-    total_options    = ShipTotalHighchartOptions(pcd)
-    faction_options  = FactionTotalHighChartOptions(pcd)
+#     total_options    = ShipTotalHighchartOptions(pcd)
+#     faction_options  = FactionTotalHighChartOptions(pcd)
 
-    ships_by_faction = pm.get_ships_by_faction()
-    ship_options     = ShipHighchartOptions(pcd, ships_by_faction)
+#     ships_by_faction = pm.get_ships_by_faction()
+#     ship_options     = ShipHighchartOptions(pcd, ships_by_faction)
 
-    pilots_by_faction = pm.get_pilots_by_faction()
-    pilot_options     = PilotHighchartOptions(pcd, pilots_by_faction)
+#     pilots_by_faction = pm.get_pilots_by_faction()
+#     pilot_options     = PilotHighchartOptions(pcd, pilots_by_faction)
 
-    upgrade_options   = UpgradeHighChartOptions(pcd)
+#     upgrade_options   = UpgradeHighChartOptions(pcd)
 
 
-    tourney_types    = pm.get_tourney_types()
+#     tourney_types    = pm.get_tourney_types()
 
-    tt = []
-    for tourney_type in tourney_types:
-        tt.append( tourney_type[0])
+#     tt = []
+#     for tourney_type in tourney_types:
+#         tt.append( tourney_type[0])
 
-    pskill = PilotSkillTimeSeriesData(pm,venue_id)
-    pskillgraph = PilotSkillHighchartsGraph(pskill)
+#     pskill = PilotSkillTimeSeriesData(pm,venue_id)
+#     pskillgraph = PilotSkillHighchartsGraph(pskill)
 
-    if venue_id is None:
-        venue_id = 0
-    return render_template("time_series.html",
-                           ship_total_options=total_options.options,
-                           faction_options=faction_options.options,
-                           ship_options=ship_options.options,
-                           pilot_options=pilot_options.options,
-                           upgrade_options=upgrade_options.options,
-                           upgrade_types=sorted(pcd.upgrade_types.keys()),
-                           upgrade_name_to_type=pcd.upgrade_name_to_type,
-                           pilot_skill_options=pskillgraph.options,
-                           tourney_types=tt,
-                           ps_ships = sorted(pskill.ships.keys()),
-                           scum=Faction.SCUM.description,
-                           rebel=Faction.REBEL.description,
-                           imperial=Faction.IMPERIAL.description,
-                           venue_id=str(venue_id),
-                           venue_name=venue_name)
+#     if venue_id is None:
+#         venue_id = 0
+#     return render_template("time_series.html",
+#                            ship_total_options=total_options.options,
+#                            faction_options=faction_options.options,
+#                            ship_options=ship_options.options,
+#                            pilot_options=pilot_options.options,
+#                            upgrade_options=upgrade_options.options,
+#                            upgrade_types=sorted(pcd.upgrade_types.keys()),
+#                            upgrade_name_to_type=pcd.upgrade_name_to_type,
+#                            pilot_skill_options=pskillgraph.options,
+#                            tourney_types=tt,
+#                            ps_ships = sorted(pskill.ships.keys()),
+#                            scum=Faction.SCUM.description,
+#                            rebel=Faction.REBEL.description,
+#                            imperial=Faction.IMPERIAL.description,
+#                            venue_id=str(venue_id),
+#                            venue_name=venue_name)
 
 @app.route("/get_ps_time_series",methods=['POST'])
 def get_ps_time_series():
@@ -2445,30 +2450,30 @@ def set_geo():
     pm.db_connector.get_session().commit()
     return redirect(url_for("venues"))
 
-@app.route("/venue")
+@app.route("/api/venue")
 def venue():
     pm               = PersistenceManager(myapp.db_connector)
     venue_id         = request.args.get('venue_id')
     venue            =pm.get_venue_by_id(venue_id)
     return render_template('venue.html', venue=venue)
 
-@app.route("/heatmap")
-def heatmap():
-    pm               = PersistenceManager(myapp.db_connector)
-    venues         = pm.get_venues()
-    data = []
-    for venue in venues:
-        if venue.latitude is not None and venue.longitude is not None:
-            markup =  Markup("%s: %d event(s)" % (venue.venue_url(), len(venue.tourneys)))
-            data.append( { 'count': len(venue.tourneys),
-                           'lat': float(venue.latitude),
-                           'lng': float(venue.longitude),
-                           'name': str(markup.decode()),
+# @app.route("/api/heatmap")
+# def heatmap():
+#     pm               = PersistenceManager(myapp.db_connector)
+#     venues         = pm.get_venues()
+#     data = []
+#     for venue in venues:
+#         if venue.latitude is not None and venue.longitude is not None:
+#             markup =  Markup("%s: %d event(s)" % (venue.venue_url(), len(venue.tourneys)))
+#             data.append( { 'count': len(venue.tourneys),
+#                            'lat': float(venue.latitude),
+#                            'lng': float(venue.longitude),
+#                            'name': str(markup.decode()),
 
-                           }
-                         )
+#                            }
+#                          )
 
-    return render_template("heat_map.html", data=data, venues=venues)
+#     return jsonify(data=data, venues=venues)
 
 @app.route("/edit_venue_geo",methods=['POST'])
 def edit_venue_geo():

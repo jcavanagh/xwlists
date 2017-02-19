@@ -43,6 +43,7 @@ var configs = {
     ],
     entry: {
       bundle: [
+        'webpack-dev-server/client?http://localhost:8080',
         'webpack/hot/dev-server',
         './ui/xwlists.js'
       ]

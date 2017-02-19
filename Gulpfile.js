@@ -18,6 +18,10 @@ gulp.task('webpack', ['xwlists'], (callback) => {
     new WebpackDevServer(webpack(webpackConfig), {
         hot: true,
         contentBase: path.join(__dirname, 'static'),
+        proxy: [{
+            context: ['/about', '/heatmap', '/new', '/search', '/time_series', '/tourneys'],
+            target: 'http://localhost:5002'
+        }]
     }).listen(webpackPort, 'localhost', function(err) {
         if(err) throw new gutil.PluginError('webpack', err);
         callback();
