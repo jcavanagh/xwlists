@@ -10,7 +10,13 @@ import {Tabs, Tab} from 'material-ui/Tabs';
 
 import theme from './theme';
 
+const AppRoot = styled.div`
+    min-height: 100vh;
+    background-image: linear-gradient(-180deg, #FCFCFC 0%, #EAEAEA 100%);
+`;
+
 const Content = styled.div`
+    height: 100%;
     padding: 20px;
 `;
 
@@ -118,13 +124,13 @@ export default class App extends React.Component {
 
         return (
             <MuiThemeProvider muiTheme={theme}>
-                <div>
+                <AppRoot>
                     <AppBar title={TopBar} iconElementLeft={<div/>} />
                     <NavBar router={this.props.router} items={navItems} selected={selectedTabIndex} />
                     <Content>
                         {this.props.children}
                     </Content>
-                </div>
+                </AppRoot>
             </MuiThemeProvider>
         );
     }
