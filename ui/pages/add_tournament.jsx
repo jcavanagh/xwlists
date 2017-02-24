@@ -2,6 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 import { Field, reduxForm as ReduxForm } from 'redux-form';
 
+import fetch from 'isomorphic-fetch';
+import { asyncConnect as Connect } from 'redux-connect';
+
 import Select from 'react-select';
 
 import Dialog from 'material-ui/Dialog';
@@ -11,11 +14,12 @@ import FloatingActionButton from 'material-ui/FloatingActionButton';
 import MenuItem from 'material-ui/MenuItem'
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
+import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar';
 
 import ActionHelp from 'material-ui/svg-icons/action/help-outline';
 
-import { SelectField, TextField, DatePicker} from 'redux-form-material-ui';
+import { SelectField, TextField, DatePicker } from 'redux-form-material-ui';
 
 const Form = styled(Paper)`
     display: flex;
@@ -60,8 +64,12 @@ const FormLabel = styled.div`
     padding-left: 10px;
 `;
 
+const StyledSelect = styled(Select)`
+    width: 100%;
+`;
+
 class FormDatePicker extends React.Component {
-    onDateChange = (evt, date) => {
+    onDateChange = (date) => {
         //Format how backend wants it
         const formatted = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         this.props.input.onChange(formatted);
@@ -91,9 +99,42 @@ const FormSelectField = (props) => (
     <SelectField hintText={props.label} {...props} onChange={(event, index, value) => props.input.onChange(value)} {...props} />
 )
 
+class FormReactSelectField extends React.Component {
+    render() {
+        const {input: {value, onBlur, onChange}, initialValue, ...props} = this.props;
+        const fieldValue = value || initialValue;
+        return (
+            <StyledSelect
+                multi={true}
+                onBlur={() => onBlur(fieldValue)}
+                onChange={(newValue) => onChange(newValue)}
+                value={fieldValue}
+                {...props} />
+        );
+    }
+}
+
 class FormFileField extends React.Component {
+    static defaultProps = {
+        onFileUploaded: (evt) => {}
+    }
+
+    constructor() {
+        super();
+        this.state = {
+            errorOpen: false
+        }
+    }
+
+    handleErrorClose = () => this.setState({errorOpen: false})
+
     onFileUploaded = (evt) => {
-        debugger;
+        try {
+            const parsed = JSON.parse(evt.target.result);
+            this.props.onFileUploaded(parsed);
+        } catch(e) {
+            this.setState({errorOpen: true});
+        }
     }
 
     onInputChange = (evt) => {
@@ -102,28 +143,83 @@ class FormFileField extends React.Component {
             let reader = new FileReader();
             //TODO: Progress indicator?
             reader.onload = this.onFileUploaded;
-            reader.readAsDataURL(file);
+            reader.readAsText(file);
         }
-    };
+    }
 
     componentDidMount = () => {
         this._fileInput.addEventListener('change', this.onInputChange, false);
-    };
+    }
 
     componentWillUnmount = () => {
         this._fileInput.removeEventListener('change', this.onInputChange, false);
-    };
+    }
 
     render() {
+        const actions = [
+            <RaisedButton
+                label="Close"
+                primary={true}
+                onTouchTap={this.handleErrorClose}
+            />
+        ];
+
         return (
             <RaisedButton containerElement="label" type="file" label="Cryodex Upload" primary={true}  onChange={this.onInputChange}>
                 <input type="file" style={{display: 'none'}} ref={(ref) => this._fileInput = ref} />
+                <Dialog title="Upload Failed!" actions={actions} modal={false} open={this.state.errorOpen} onRequestClose={this.handleErrorClose}>
+                    <p>Could not parse uploaded file!</p>
+                    <p>Please make sure the upload was valid JSON!</p>
+                </Dialog>
             </RaisedButton>
         );
     }
 }
 
-const TournamentReportPreview = (props) => (<div />);
+class TournamentReportPreview extends React.Component {
+    extract = (data, field) => {
+        const split = field.split('.');
+
+        //Extract nested
+        if(split[1]) {
+            return this.extract(data[split[0]], split.slice(1).join('.'));
+        }
+
+        return data[split[0]];
+    }
+
+    render() {
+        const { data, fields } = this.props;
+
+        if(!data || !data.length || !fields || !fields.length) { return null; }
+
+        return (
+            <Table selectable={false}>
+                <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
+                    <TableRow>
+                        <TableHeaderColumn colSpan={fields.length} style={{color: 'black', fontSize: '16px', textTransform: 'uppercase'}}>
+                            Upload Preview
+                        </TableHeaderColumn>
+                    </TableRow>
+                    <TableRow>
+                        {fields.map(field => (
+                            <TableHeaderColumn key={field.key}>{field.title}</TableHeaderColumn>
+                        ))}
+                    </TableRow>
+                </TableHeader>
+                <TableBody displayRowCheckbox={false} stripedRows={true}>
+                    {data.map((dataItem, index) => (
+                        <TableRow key={index}>
+                            {fields.map(field => (
+                                <TableRowColumn key={field.key}>{this.extract(dataItem, field.key)}</TableRowColumn>
+                            ))}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        );
+    }
+}
 
 class UploadHelpDialog extends React.Component {
     constructor() {
@@ -133,13 +229,8 @@ class UploadHelpDialog extends React.Component {
         };
     }
 
-    handleOpen = () => {
-        this.setState({open: true});
-    };
-
-    handleClose = () => {
-        this.setState({open: false});
-    };
+    handleOpen = () => this.setState({open: true})
+    handleClose = () => this.setState({open: false})
 
     render() {
         const actions = [
@@ -166,12 +257,66 @@ class UploadHelpDialog extends React.Component {
     }
 }
 
+@Connect([{
+    key: 'sets',
+    promise: ({ params, helpers }) => fetch('/api/v1/metadata/sets').then(resp => resp.data)
+}])
 @ReduxForm({
     form: 'addTourney'
 })
 class AddTournament extends React.Component {
+    constructor() {
+        super();
+
+        this.standingsFields = [{
+            title: 'Name',
+            key: 'name'
+        },{
+            title: 'MOV',
+            key: 'mov'
+        },{
+            title: 'SOS',
+            key: 'sos'
+        },{
+            title: 'Score',
+            key: 'score'
+        },{
+            title: 'Swiss Rank',
+            key: 'rank.swiss'
+        },{
+            title: 'Champ. Rank',
+            key: 'rank.elimination'
+        }];
+
+         // this.roundsFields = [{
+        //     title: 'Player 1',
+        //     key: 'player1'
+        // },{
+        //     title: 'Points',
+        //     key: 'player1points'
+        // },{
+        //     title: 'Player 2',
+        //     key: 'player2'
+        // },{
+        //     title: 'Points',
+        //     key: 'player2points'
+        // },{
+        //     title: 'Result',
+        //     key: 'result'
+        // }];
+
+        this.state = {
+            cryodexPreview: {}
+        }
+    }
+
+    setPreview = (cryodexPreview) => this.setState({ cryodexPreview });
+
+    onSelectChange = (value) => this.setState({value});
+
     render() {
-        const { handleSubmit, pristine, submitting } = this.props;
+        const { handleSubmit, pristine, sets, submitting } = this.props;
+        const { cryodexPreview } = this.state;
 
         return (
             <Form zDepth={2} onSubmit={handleSubmit}>
@@ -198,9 +343,26 @@ class AddTournament extends React.Component {
                         <FormFieldContainer>
                             <Field name="datepicker" component={FormDatePicker} />
                         </FormFieldContainer>
+                        <Divider />
+                        <FormFieldContainer>
+                            <Field name="tourney_type" label="Tourney Type" component={FormSelectField}>
+                                <MenuItem value="60" primaryText="60 minutes" />
+                                <MenuItem value="75" primaryText="75 minutes" />
+                                <MenuItem value="90" primaryText="90 minutes" />
+                            </Field>
+                            <FormLabel>OR</FormLabel>
+                            <Field name="round_length_userdef" label="Custom Tourney Type" component={FormTextField} />
+                        </FormFieldContainer>
+                        <Divider />
+                        <FormFieldContainer>
+                            <Field name="participant_count" label="Number of Participants" component={FormTextField} />
+                        </FormFieldContainer>
+                        <Divider />
                     </FormContainer>
                     <FormContainer>
-
+                        <FormFieldContainer>
+                            <Field name="sets" options={sets} initialValue={sets} label="Legal Sets" component={FormReactSelectField} />
+                        </FormFieldContainer>
                     </FormContainer>
                 </div>
                 <FormHeader style={{position: 'relative'}}>
@@ -208,8 +370,8 @@ class AddTournament extends React.Component {
                     <UploadHelpDialog />
                 </FormHeader>
                 <FormContainer>
-                    <Field name="tourney_report" component={FormFileField} />
-                    <TournamentReportPreview />
+                    <Field name="tourney_report" component={FormFileField} onFileUploaded={this.setPreview} />
+                    <TournamentReportPreview fields={this.standingsFields} data={cryodexPreview.players} />
                 </FormContainer>
                 <Toolbar style={{flexDirection: 'row-reverse'}}>
                     <ToolbarGroup lastChild={true} >

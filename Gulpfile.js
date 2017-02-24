@@ -19,7 +19,7 @@ gulp.task('webpack', ['xwlists'], (callback) => {
         hot: true,
         contentBase: path.join(__dirname, 'static'),
         proxy: [{
-            context: ['/about', '/heatmap', '/new', '/search', '/time_series', '/tourneys'],
+            context: ['/about', '/heatmap', '/new', '/search', '/time_series', '/tourneys', '/api'],
             target: 'http://localhost:5002'
         }]
     }).listen(webpackPort, 'localhost', function(err) {

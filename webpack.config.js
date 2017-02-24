@@ -2,8 +2,10 @@ var webpack = require('webpack'),
     path = require('path'),
     merge = require('lodash/merge');
 
-const NODE_ENV = JSON.stringify(process.env.NODE_ENV) || 'development';
-var env = {'process.env': {NODE_ENV: NODE_ENV}};
+const NODE_ENV = process.env.NODE_ENV || 'development';
+var defines = {
+  ENVIRONMENT: JSON.stringify(NODE_ENV)
+};
 
 var loaders = [{
   test: /\.(jsx|js|es)$/,
@@ -12,6 +14,9 @@ var loaders = [{
 },{
   test: require.resolve("react-dom"),
   loader: "expose-loader?ReactDOM"
+},{
+  test: /\.css$/,
+  loaders: [ 'style-loader', 'css-loader' ]
 }];
 
 var configs = {
@@ -21,7 +26,7 @@ var configs = {
       bundle: ['./ui/xwlists.js']
     },
     plugins: [
-      // new webpack.DefinePlugin(env),
+      new webpack.DefinePlugin(defines),
       new webpack.optimize.UglifyJsPlugin({
         compress: {warnings: false}
       }),
@@ -37,7 +42,7 @@ var configs = {
   development: {
     devtool: 'source-map',
     plugins: [
-      // new webpack.DefinePlugin(env),
+      new webpack.DefinePlugin(defines),
       new webpack.HotModuleReplacementPlugin(),
       new webpack.NoEmitOnErrorsPlugin()
     ],

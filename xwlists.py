@@ -22,6 +22,7 @@ from werkzeug.utils import secure_filename
 from requests import put, get, post, delete
 from api import TournamentsAPI, TournamentAPI, PlayersAPI, PlayerAPI, TournamentSearchAPI, TournamentTokenAPI, VassalLeaguesAPI, VassalLeagueAPI, \
     VassalLeagueRanking
+import api_ui
 from challonge_helper import ChallongeHelper
 
 from cryodex import Cryodex
@@ -97,6 +98,8 @@ api.add_resource(PlayerAPI, '/api/v1/tournament/<int:tourney_id>/player/<int:pla
 
 api.add_resource(TournamentSearchAPI, '/api/v1/search/tournaments')
 api.add_resource(TournamentTokenAPI, '/api/v1/tournament/<int:tourney_id>/token')
+
+api_ui.init(api)
 
 
 @app.teardown_appcontext
@@ -1464,16 +1467,6 @@ def edit_elim_results():
     #see https://editor.datatables.net/manual/server
     return edit_results( request, True )
 
-
-@app.route("/new")
-def new():
-    set = sorted(xwingmetadata.sets_and_expansions.keys() )
-    pm         = PersistenceManager(myapp.db_connector)
-    venues     = pm.get_tourney_venues()
-    return render_template('new_tourney.html', sets      = set,
-                                               tourney_formats = xwingmetadata.formats,
-                                               format_default  = xwingmetadata.format_default,
-                                               venues          = venues)
 
 @app.route("/edit_tourney_details")
 def edit_tourney_details():

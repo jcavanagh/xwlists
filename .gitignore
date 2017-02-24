@@ -9,3 +9,11 @@ static/bundle.js
 static/xwlists.dev.js*
 
 .DS_Store
+
+# virtualenv
+bin
+lib
+include
+man
+.Python
+pip-selfcheck.json
