@@ -2,18 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { IndexRoute, Router, Route, Link, browserHistory } from 'react-router';
 
-import { ReduxAsyncConnect } from 'redux-connect';
-
 //Material UI needs this
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
+//Bootstrapping react-select
+import 'react-select/dist/react-select.css';
+
 //Redux
 import { Provider } from 'react-redux';
 import store from './redux/store'
-
-//Bootstrapping
-import './styles';
 
 //Actual app
 import App from './app';
@@ -21,7 +19,7 @@ import { About, AddTournament, Analysis, Search, NotFound, Tournaments, Vassal, 
 
 ReactDOM.render((
     <Provider store={store}>
-        <Router history={browserHistory} render={(props) => <ReduxAsyncConnect {...props}/>}>
+        <Router history={browserHistory}>
             <Route path="/" component={App}>
                 <IndexRoute component={Search} />
                 <Route path="about" component={About} />

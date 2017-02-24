@@ -1,72 +1,20 @@
 import React from 'react';
-import styled from 'styled-components';
 import { Field, reduxForm as ReduxForm } from 'redux-form';
 
 import fetch from 'isomorphic-fetch';
-import { asyncConnect as Connect } from 'redux-connect';
-
-import Select from 'react-select';
 
 import Dialog from 'material-ui/Dialog';
 import Divider from 'material-ui/Divider';
 import FlatButton from 'material-ui/FlatButton';
-import FloatingActionButton from 'material-ui/FloatingActionButton';
 import MenuItem from 'material-ui/MenuItem'
-import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
-import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table';
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar';
-
-import ActionHelp from 'material-ui/svg-icons/action/help-outline';
 
 import { SelectField, TextField, DatePicker } from 'redux-form-material-ui';
 
-const Form = styled(Paper)`
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
-`;
-
-const FormContainer = styled.div`
-    flex: 1;
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 20px;
-`;
-
-const FormContainerDivider = styled.div`
-    width: 1px;
-    height: 80%;
-    margin-left: 5px;
-    margin-right: 5px;
-    background-color: #000;
-`;
-
-const FormHeader = styled.div`
-    text-transform: uppercase;
-    padding: 15px;
-    font-size: 14px;
-    font-weight: 500;
-    background-color: #CCC;
-`;
-
-const FormFieldContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-`;
-
-const FormLabel = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-right: 10px;
-    padding-left: 10px;
-`;
-
-const StyledSelect = styled(Select)`
-    width: 100%;
-`;
+import { Form, FormContainer, FormContainerDivider, FormHeader, FormFieldContainer, FormLabel, StyledSelect } from './styles';
+import TournamentPreview from './tournament_preview';
+import UploadHelpDialog from './upload_help_dialog';
 
 class FormDatePicker extends React.Component {
     onDateChange = (date) => {
@@ -176,91 +124,6 @@ class FormFileField extends React.Component {
     }
 }
 
-class TournamentReportPreview extends React.Component {
-    extract = (data, field) => {
-        const split = field.split('.');
-
-        //Extract nested
-        if(split[1]) {
-            return this.extract(data[split[0]], split.slice(1).join('.'));
-        }
-
-        return data[split[0]];
-    }
-
-    render() {
-        const { data, fields } = this.props;
-
-        if(!data || !data.length || !fields || !fields.length) { return null; }
-
-        return (
-            <Table selectable={false}>
-                <TableHeader displaySelectAll={false} adjustForCheckbox={false}>
-                    <TableRow>
-                        <TableHeaderColumn colSpan={fields.length} style={{color: 'black', fontSize: '16px', textTransform: 'uppercase'}}>
-                            Upload Preview
-                        </TableHeaderColumn>
-                    </TableRow>
-                    <TableRow>
-                        {fields.map(field => (
-                            <TableHeaderColumn key={field.key}>{field.title}</TableHeaderColumn>
-                        ))}
-                    </TableRow>
-                </TableHeader>
-                <TableBody displayRowCheckbox={false} stripedRows={true}>
-                    {data.map((dataItem, index) => (
-                        <TableRow key={index}>
-                            {fields.map(field => (
-                                <TableRowColumn key={field.key}>{this.extract(dataItem, field.key)}</TableRowColumn>
-                            ))}
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        );
-    }
-}
-
-class UploadHelpDialog extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            open: false
-        };
-    }
-
-    handleOpen = () => this.setState({open: true})
-    handleClose = () => this.setState({open: false})
-
-    render() {
-        const actions = [
-            <RaisedButton
-                label="Close"
-                primary={true}
-                onTouchTap={this.handleClose}
-            />
-        ];
-
-        return (
-            <div>
-                <FloatingActionButton onTouchTap={this.handleOpen} mini={true} style={{position: 'absolute', top: '3px', left: '150px', transform: 'scale(0.6)'}}>
-                    <ActionHelp />
-                </FloatingActionButton>
-                <Dialog title="Upload Help" actions={actions} modal={false} open={this.state.open} onRequestClose={this.handleClose}>
-                    <p>Leave blank if you didn't use Cryodex</p>
-                    <p>Else, in Cryodex go to Export->Export X-Wing List Juggler Data.</p>
-                    <p>This will create a file called 'xwingtournament.json' in the folder where your Cryodex.jar file lives.</p>
-                    <p>Note: If you don't have this option in Cryodex, you need to upgrade to the latest version of Cryodex!</p>
-                </Dialog>
-            </div>
-        );
-    }
-}
-
-@Connect([{
-    key: 'sets',
-    promise: ({ params, helpers }) => fetch('/api/v1/metadata/sets').then(resp => resp.data)
-}])
 @ReduxForm({
     form: 'addTourney'
 })
@@ -371,7 +234,7 @@ class AddTournament extends React.Component {
                 </FormHeader>
                 <FormContainer>
                     <Field name="tourney_report" component={FormFileField} onFileUploaded={this.setPreview} />
-                    <TournamentReportPreview fields={this.standingsFields} data={cryodexPreview.players} />
+                    <TournamentPreview fields={this.standingsFields} data={cryodexPreview.players} />
                 </FormContainer>
                 <Toolbar style={{flexDirection: 'row-reverse'}}>
                     <ToolbarGroup lastChild={true} >

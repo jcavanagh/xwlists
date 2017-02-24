@@ -1,64 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router'
-import styled from 'styled-components';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import AppBar from 'material-ui/AppBar';
 import FlatButton from 'material-ui/FlatButton';
-import Paper from 'material-ui/Paper';
 import {Tabs, Tab} from 'material-ui/Tabs';
 
 import theme from './theme';
 
-const AppRoot = styled.div`
-    min-height: 100vh;
-    background-image: linear-gradient(-180deg, #FCFCFC 0%, #EAEAEA 100%);
-`;
-
-const Content = styled.div`
-    height: 100%;
-    padding: 20px;
-`;
-
-const TopBarContainer = styled.div`
-    display: flex;
-`;
-
-const Spacer = styled.span`
-    flex-grow: 1;
-`;
-
-const Title = styled.span`
-    font-weight: 300
-`;
-
-const SmallTitle = styled(Title)`
-    font-size: 16px;
-`;
-
-const TitleIcon = styled(Paper)`
-  height: 40px;
-  width: 40px;
-  margin: 12px 20px 0px 20px;
-  padding: 5px;
-  textAlign: center;
-  vertical-align: middle;
-  display: inline-block;
-  overflow: hidden;
-`;
-
-const IconImage = styled.div`
-    background-image: ${({src}) => `url(${src})`};
-    background-size: cover;
-    image-rendering: -webkit-optimize-contrast;
-    width: 30px;
-    height: 30px;
-`;
-
-const FlexLink = styled.a`
-    display: flex;
-    color: inherit;
-`;
+import { AppRoot, Content, TopBarContainer, Spacer, Title, SmallTitle, TitleIcon, IconImage, FlexLink } from './styles';
 
 const TopBar = (
     <TopBarContainer>
