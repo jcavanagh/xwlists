@@ -1,6 +1,7 @@
 from flask import jsonify
 from flask.ext import restful
 import xwingmetadata
+from persistence import PersistenceManager
 
 import myapp
 
@@ -15,7 +16,7 @@ class MetadataSetsAPI(restful.Resource):
 
 class MetadataFormatsAPI(restful.Resource):
     def get(self):
-        return jsonify(data=xwingmetadata.formats)
+        return jsonify(data=list(xwingmetadata.formats))
 
 class VenuesAPI(restful.Resource):
     def get(self):

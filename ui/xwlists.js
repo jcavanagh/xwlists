@@ -17,6 +17,7 @@ import store from './redux/store'
 import App from './app';
 import { About, AddTournament, Analysis, Search, NotFound, Tournaments, Vassal, WorldMap } from 'pages/index';
 
+//Render routes
 ReactDOM.render((
     <Provider store={store}>
         <Router history={browserHistory}>

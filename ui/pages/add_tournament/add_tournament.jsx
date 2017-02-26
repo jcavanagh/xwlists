@@ -1,8 +1,6 @@
 import React from 'react';
 import { Field, reduxForm as ReduxForm } from 'redux-form';
 
-import fetch from 'isomorphic-fetch';
-
 import Dialog from 'material-ui/Dialog';
 import Divider from 'material-ui/Divider';
 import FlatButton from 'material-ui/FlatButton';
@@ -15,6 +13,10 @@ import { SelectField, TextField, DatePicker } from 'redux-form-material-ui';
 import { Form, FormContainer, FormContainerDivider, FormHeader, FormFieldContainer, FormLabel, StyledSelect } from './styles';
 import TournamentPreview from './tournament_preview';
 import UploadHelpDialog from './upload_help_dialog';
+
+//Route wiring
+import Connect from 'helpers/connect';
+import { routeAddTournamentActions } from 'redux/actions';
 
 class FormDatePicker extends React.Component {
     onDateChange = (date) => {
@@ -124,6 +126,10 @@ class FormFileField extends React.Component {
     }
 }
 
+@Connect(
+    [routeAddTournamentActions()],
+    state => state.api
+)
 @ReduxForm({
     form: 'addTourney'
 })
@@ -178,7 +184,7 @@ class AddTournament extends React.Component {
     onSelectChange = (value) => this.setState({value});
 
     render() {
-        const { handleSubmit, pristine, sets, submitting } = this.props;
+        const { handleSubmit, pristine, setsList, submitting } = this.props;
         const { cryodexPreview } = this.state;
 
         return (
@@ -224,7 +230,7 @@ class AddTournament extends React.Component {
                     </FormContainer>
                     <FormContainer>
                         <FormFieldContainer>
-                            <Field name="sets" options={sets} initialValue={sets} label="Legal Sets" component={FormReactSelectField} />
+                            <Field name="sets" options={setsList} initialValue={setsList} label="Legal Sets" component={FormReactSelectField} />
                         </FormFieldContainer>
                     </FormContainer>
                 </div>

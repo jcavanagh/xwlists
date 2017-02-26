@@ -23,7 +23,7 @@ var configs = {
   production: {
     devtool: 'none',
     entry: {
-      bundle: ['./ui/xwlists.js']
+      bundle: ['babel-polyfill', './ui/xwlists.js']
     },
     plugins: [
       new webpack.DefinePlugin(defines),
@@ -50,6 +50,7 @@ var configs = {
       bundle: [
         'webpack-dev-server/client?http://localhost:8080',
         'webpack/hot/dev-server',
+        'babel-polyfill',
         './ui/xwlists.js'
       ]
     },
