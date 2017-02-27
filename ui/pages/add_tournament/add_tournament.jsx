@@ -46,7 +46,10 @@ const FormTextField = (props) => (
 )
 
 const FormSelectField = (props) => (
-    <SelectField hintText={props.label} {...props} onChange={(event, index, value) => props.input.onChange(value)} {...props} />
+    <SelectField hintText={props.label} {...props} onChange={(event, index, value) => {
+        if(props.onChange) { props.onChange(value); }
+        props.input.onChange(value)}
+    } {...props} />
 )
 
 class FormReactSelectField extends React.Component {
@@ -131,9 +134,18 @@ class FormFileField extends React.Component {
     state => state.api
 )
 @ReduxForm({
-    form: 'addTourney'
+    form: 'addTourney',
+    initialValues: {
+        country: 'United States of America'
+    }
 })
 class AddTournament extends React.Component {
+    static defaultProps = {
+        countries: [],
+        formats: [],
+        sets: []
+    }
+
     constructor() {
         super();
 
@@ -175,16 +187,19 @@ class AddTournament extends React.Component {
         // }];
 
         this.state = {
-            cryodexPreview: {}
+            cryodexPreview: {},
+            currentCountry: 'United States of America'
         }
     }
 
     setPreview = (cryodexPreview) => this.setState({ cryodexPreview });
 
+    onCountryChange = (currentCountry) => this.setState({currentCountry});
     onSelectChange = (value) => this.setState({value});
 
     render() {
-        const { handleSubmit, pristine, setsList, submitting } = this.props;
+        const { countries, formats, handleSubmit, pristine, setsList, states, submitting } = this.props;
+        const currentStates = states[this.state.currentCountry] || [];
         const { cryodexPreview } = this.state;
 
         return (
@@ -203,7 +218,9 @@ class AddTournament extends React.Component {
                         <Divider />
                         <FormFieldContainer>
                             <Field name="tourney_format_dropdown" label="Tourney Format" component={FormSelectField}>
-                                <MenuItem value="kittens" primaryText="Kittens" />
+                                {formats.map(format =>
+                                    <MenuItem key={format} value={format} primaryText={format} />
+                                )}
                             </Field>
                             <FormLabel>OR</FormLabel>
                             <Field name="tourney_format_custom" label="Custom Tourney Format" component={FormTextField} />
@@ -231,6 +248,23 @@ class AddTournament extends React.Component {
                     <FormContainer>
                         <FormFieldContainer>
                             <Field name="sets" options={setsList} initialValue={setsList} label="Legal Sets" component={FormReactSelectField} />
+                        </FormFieldContainer>
+                        <FormFieldContainer>
+                            <Field name="country" label="Country" component={FormSelectField} onChange={this.onCountryChange}>
+                                {countries.map(country =>
+                                    <MenuItem key={country} value={country} primaryText={country} />
+                                )}
+                            </Field>
+                        </FormFieldContainer>
+                        <FormFieldContainer>
+                            <Field name="state" label="State" component={FormSelectField}>
+                                {currentStates.map(state =>
+                                    <MenuItem key={state} value={state} primaryText={state} />
+                                )}
+                            </Field>
+                        </FormFieldContainer>
+                        <FormFieldContainer>
+                            <Field name="city" label="City" component={FormTextField} />
                         </FormFieldContainer>
                     </FormContainer>
                 </div>

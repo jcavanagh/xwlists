@@ -1,3 +1,10 @@
+import * as countries from 'data/countries';
+
+const apiInitial = {
+    countries: countries.countries,
+    states: countries.states
+};
+
 export const apiReducer = (state, action) => {
     switch(action.type) {
         case 'FETCH_SETS':
@@ -21,6 +28,6 @@ export const apiReducer = (state, action) => {
             };
             return action.formats;
         default:
-            return state || {};
+            return state || apiInitial;
     }
 }

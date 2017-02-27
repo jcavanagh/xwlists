@@ -16,7 +16,8 @@ class MetadataSetsAPI(restful.Resource):
 
 class MetadataFormatsAPI(restful.Resource):
     def get(self):
-        return jsonify(data=list(xwingmetadata.formats))
+        # Sort reverse
+        return jsonify(data=sorted(list(xwingmetadata.formats))[::-1])
 
 class VenuesAPI(restful.Resource):
     def get(self):
