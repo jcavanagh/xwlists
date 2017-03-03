@@ -11,7 +11,7 @@ import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar';
 import { SelectField, TextField, DatePicker } from 'redux-form-material-ui';
 
 import { LocationDisabled, LocationError, LocationLoading } from './location';
-import { Form, FormContainer, FormContainerDivider, FormHeader, FormFieldContainer, FormLabel, StyledSelect } from './styles';
+import { Form, FormContainer, FormContainerDivider, FormHeader, FormFieldContainer, FormLabel, StyledCreatable, StyledSelect } from './styles';
 import TournamentPreview from './tournament_preview';
 import UploadHelpDialog from './upload_help_dialog';
 
@@ -47,28 +47,24 @@ const FormTextField = (props) => (
 )
 
 class FormSelectField extends React.Component {
-    onChange = (event, index, value) => {
-        //Call supplied handler if given, and also react-forms handler
-        if(this.props.onChange) { this.props.onChange(value); }
-        this.props.input.onChange(value);
-    }
-
     render() {
         return (
-            <SelectField hintText={this.props.label} {...this.props} onChange={this.onChange} />
+            <SelectField hintText={this.props.label} {...this.props} onChange={this.props.input.onChange} />
         );
     }
 }
 
 class FormReactSelectField extends React.Component {
     render() {
-        const {input: {value, onBlur, onChange}, initialValue, ...props} = this.props;
+        const {input: {value, onBlur, onChange}, creatable, initialValue, ...props} = this.props;
         const fieldValue = value || initialValue;
+        const Component = creatable ? StyledCreatable : StyledSelect;
+
         return (
-            <StyledSelect
+            <Component
                 multi={true}
                 onBlur={() => onBlur(fieldValue)}
-                onChange={(newValue) => onChange(newValue)}
+                onChange={(newValue) => onChange(newValue ? newValue.value : null)}
                 value={fieldValue}
                 {...props} />
         );
@@ -143,20 +139,22 @@ const selector = formValueSelector(FORM_NAME);
 @Connect(
     [routeAddTournamentActions()],
     state => {
+        const formValues = state.form[FORM_NAME] ? state.form[FORM_NAME].values : {};
         const country = selector(state, 'country') || state.location.country;
         const states = country ? state.api.states[country] : [];
         return {
             api: state.api,
             location: state.location,
-            countries: state.api.countries,
             states,
             initialValues: {
-                //Autofill from location if we have it
+                tourney_format_dropdown: state.api.formats ? state.api.formats[0] : null,
+                round_length_dropdown: '60',
+                //Override any of that with selected form values - needed when enableReinitialize is true
+                ...formValues,
+                //Autofill from location if we have it, must manually preserve existing if present
                 country,
                 state: selector(state, 'state') || state.location.state,
-                city: selector(state, 'city')  || state.location.city,
-                tourney_format_dropdown: state.api.formats ? state.api.formats[0] : null,
-                round_length_dropdown: '60'
+                city: selector(state, 'city') || state.location.city,
             }
         }
     }
@@ -284,7 +282,10 @@ class AddTournament extends React.Component {
                             <Field name="city" label="City" component={FormTextField} />
                         </FormFieldContainer>
                         <FormFieldContainer>
-                            <Field name="sets" options={api.setsList} initialValue={api.setsList} label="Legal Sets" clearable={false} component={FormReactSelectField} />
+                            <Field name="venue" options={api.venuesList} placeholder="Venue" multi={false} creatable={true} component={FormReactSelectField} />
+                        </FormFieldContainer>
+                        <FormFieldContainer>
+                            <Field name="sets" options={api.setsList} initialValue={api.setsList} placeholder="Legal Sets" clearable={false} component={FormReactSelectField} />
                         </FormFieldContainer>
                     </FormContainer>
                 </div>

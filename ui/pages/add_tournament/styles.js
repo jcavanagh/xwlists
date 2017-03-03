@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 import Paper from 'material-ui/Paper';
-import Select from 'react-select';
+import Select, { Creatable } from 'react-select';
 
 export const Form = styled(Paper)`
     display: flex;
@@ -48,4 +48,10 @@ export const FormLabel = styled.div`
 
 export const StyledSelect = styled(Select)`
     width: 100%;
+    margin-top: 10px;
+`;
+
+export const StyledCreatable = styled(Creatable)`
+    width: 100%;
+    margin-top: 10px;
 `;
