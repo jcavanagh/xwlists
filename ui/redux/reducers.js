@@ -1,6 +1,10 @@
 import * as countries from 'data/countries';
 
 const apiInitial = {
+    sets: [],
+    setsList: [],   //TODO: react-select specific mappings probably don't belong here
+    formats: [],
+    venues: [],
     countries: countries.countries,
     states: countries.states
 };
@@ -29,5 +33,32 @@ export const apiReducer = (state, action) => {
             return action.formats;
         default:
             return state || apiInitial;
+    }
+}
+
+const locationInitial = {
+    disabled: false,
+    error: false
+};
+export const locationReducer = (state, action) => {
+    switch(action.type) {
+        case 'LOCATION_UPDATE':
+            return {
+                ...action.location,
+                disabled: false,
+                error: false
+            };
+        case 'LOCATION_DISABLED':
+            return {
+                ...state,
+                disabled: true
+            };
+        case 'LOCATION_ERROR':
+            return {
+                ...state,
+                error: true
+            }
+        default:
+            return state || locationInitial;
     }
 }

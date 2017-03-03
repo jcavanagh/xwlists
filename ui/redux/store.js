@@ -3,7 +3,7 @@ import { reducer as formReducer } from 'redux-form';
 import createLogger from 'redux-logger';
 import thunk from 'redux-thunk';
 
-import { apiReducer } from './reducers';
+import { apiReducer, locationReducer } from './reducers';
 
 const middlewares = [thunk];
 
@@ -13,7 +13,8 @@ if(ENVIRONMENT === 'development') {
 
 const reducers = {
   form: formReducer,
-  api: apiReducer
+  api: apiReducer,
+  location: locationReducer
 };
 
 const reducer = combineReducers(reducers);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field, reduxForm as ReduxForm } from 'redux-form';
+import { Field, formValueSelector, reduxForm as ReduxForm } from 'redux-form';
 
 import Dialog from 'material-ui/Dialog';
 import Divider from 'material-ui/Divider';
@@ -45,12 +45,19 @@ const FormTextField = (props) => (
     />
 )
 
-const FormSelectField = (props) => (
-    <SelectField hintText={props.label} {...props} onChange={(event, index, value) => {
-        if(props.onChange) { props.onChange(value); }
-        props.input.onChange(value)}
-    } {...props} />
-)
+class FormSelectField extends React.Component {
+    onChange = (event, index, value) => {
+        //Call supplied handler if given, and also react-forms handler
+        if(this.props.onChange) { this.props.onChange(value); }
+        this.props.input.onChange(value);
+    }
+
+    render() {
+        return (
+            <SelectField hintText={this.props.label} {...this.props} onChange={this.onChange} />
+        );
+    }
+}
 
 class FormReactSelectField extends React.Component {
     render() {
@@ -129,23 +136,35 @@ class FormFileField extends React.Component {
     }
 }
 
+const FORM_NAME = 'addTourney';
+const selector = formValueSelector(FORM_NAME);
+
 @Connect(
     [routeAddTournamentActions()],
-    state => state.api
+    state => {
+        const country = selector(state, 'country') || state.location.country;
+        const states = country ? state.api.states[country] : [];
+        return {
+            api: state.api,
+            location: state.location,
+            countries: state.api.countries,
+            states,
+            initialValues: {
+                //Autofill from location if we have it
+                country,
+                state: selector(state, 'state') || state.location.state,
+                city: selector(state, 'city')  || state.location.city,
+                tourney_format_dropdown: state.api.formats ? state.api.formats[0] : null,
+                round_length_dropdown: '60'
+            }
+        }
+    }
 )
 @ReduxForm({
-    form: 'addTourney',
-    initialValues: {
-        country: 'United States of America'
-    }
+    form: FORM_NAME,
+    enableReinitialize: true
 })
 class AddTournament extends React.Component {
-    static defaultProps = {
-        countries: [],
-        formats: [],
-        sets: []
-    }
-
     constructor() {
         super();
 
@@ -187,19 +206,16 @@ class AddTournament extends React.Component {
         // }];
 
         this.state = {
-            cryodexPreview: {},
-            currentCountry: 'United States of America'
+            cryodexPreview: {}
         }
     }
 
     setPreview = (cryodexPreview) => this.setState({ cryodexPreview });
 
-    onCountryChange = (currentCountry) => this.setState({currentCountry});
     onSelectChange = (value) => this.setState({value});
 
     render() {
-        const { countries, formats, handleSubmit, pristine, setsList, states, submitting } = this.props;
-        const currentStates = states[this.state.currentCountry] || [];
+        const { api, handleSubmit, location, pristine, states, submitting } = this.props;
         const { cryodexPreview } = this.state;
 
         return (
@@ -218,7 +234,7 @@ class AddTournament extends React.Component {
                         <Divider />
                         <FormFieldContainer>
                             <Field name="tourney_format_dropdown" label="Tourney Format" component={FormSelectField}>
-                                {formats.map(format =>
+                                {api.formats.map(format =>
                                     <MenuItem key={format} value={format} primaryText={format} />
                                 )}
                             </Field>
@@ -231,13 +247,13 @@ class AddTournament extends React.Component {
                         </FormFieldContainer>
                         <Divider />
                         <FormFieldContainer>
-                            <Field name="tourney_type" label="Tourney Type" component={FormSelectField}>
+                            <Field name="round_length_dropdown" label="Round Length" component={FormSelectField}>
                                 <MenuItem value="60" primaryText="60 minutes" />
                                 <MenuItem value="75" primaryText="75 minutes" />
                                 <MenuItem value="90" primaryText="90 minutes" />
                             </Field>
                             <FormLabel>OR</FormLabel>
-                            <Field name="round_length_userdef" label="Custom Tourney Type" component={FormTextField} />
+                            <Field name="round_length_userdef" label="Custom Round Length" component={FormTextField} />
                         </FormFieldContainer>
                         <Divider />
                         <FormFieldContainer>
@@ -247,24 +263,24 @@ class AddTournament extends React.Component {
                     </FormContainer>
                     <FormContainer>
                         <FormFieldContainer>
-                            <Field name="sets" options={setsList} initialValue={setsList} label="Legal Sets" component={FormReactSelectField} />
-                        </FormFieldContainer>
-                        <FormFieldContainer>
-                            <Field name="country" label="Country" component={FormSelectField} onChange={this.onCountryChange}>
-                                {countries.map(country =>
+                            <Field name="country" label="Country" component={FormSelectField}>
+                                {api.countries.map(country =>
                                     <MenuItem key={country} value={country} primaryText={country} />
                                 )}
                             </Field>
                         </FormFieldContainer>
                         <FormFieldContainer>
                             <Field name="state" label="State" component={FormSelectField}>
-                                {currentStates.map(state =>
+                                {states.map(state =>
                                     <MenuItem key={state} value={state} primaryText={state} />
                                 )}
                             </Field>
                         </FormFieldContainer>
                         <FormFieldContainer>
                             <Field name="city" label="City" component={FormTextField} />
+                        </FormFieldContainer>
+                        <FormFieldContainer>
+                            <Field name="sets" options={api.setsList} initialValue={api.setsList} label="Legal Sets" clearable={false} component={FormReactSelectField} />
                         </FormFieldContainer>
                     </FormContainer>
                 </div>
