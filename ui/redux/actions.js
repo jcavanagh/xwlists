@@ -52,10 +52,14 @@ const geocode = (latitude, longitude) => (dispatch, getState) => {
 }
 
 //Add geolocation event watcher
-let watcher;
 if('geolocation' in navigator) {
-    watcher = navigator.geolocation.watchPosition(function(position) {
+    store.dispatch({
+        type: 'LOCATION_LOADING'
+    });
+
+    navigator.geolocation.watchPosition(function(position) {
         store.dispatch(
+            //Delegate to the geocode actions
             geocode(position.coords.latitude, position.coords.longitude),
             error => {
                 switch(error.code) {

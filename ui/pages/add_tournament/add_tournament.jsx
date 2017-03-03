@@ -10,6 +10,7 @@ import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar';
 
 import { SelectField, TextField, DatePicker } from 'redux-form-material-ui';
 
+import { LocationDisabled, LocationError, LocationLoading } from './location';
 import { Form, FormContainer, FormContainerDivider, FormHeader, FormFieldContainer, FormLabel, StyledSelect } from './styles';
 import TournamentPreview from './tournament_preview';
 import UploadHelpDialog from './upload_help_dialog';
@@ -262,6 +263,9 @@ class AddTournament extends React.Component {
                         <Divider />
                     </FormContainer>
                     <FormContainer>
+                        {location.disabled ? <LocationDisabled /> : null}
+                        {location.error ? <LocationError /> : null}
+                        {location.loading ? <LocationLoading /> : null}
                         <FormFieldContainer>
                             <Field name="country" label="Country" component={FormSelectField}>
                                 {api.countries.map(country =>

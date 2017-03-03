@@ -10,6 +10,8 @@ const apiInitial = {
 };
 
 export const apiReducer = (state, action) => {
+    state = state || apiInitial;
+
     switch(action.type) {
         case 'FETCH_SETS':
             const sets = action.data || [];
@@ -32,21 +34,29 @@ export const apiReducer = (state, action) => {
             };
             return action.formats;
         default:
-            return state || apiInitial;
+            return state;
     }
 }
 
 const locationInitial = {
+    loading: false,
     disabled: false,
     error: false
 };
 export const locationReducer = (state, action) => {
+    state = state || locationInitial;
+
     switch(action.type) {
         case 'LOCATION_UPDATE':
             return {
                 ...action.location,
                 disabled: false,
-                error: false
+                error: false,
+                loading: false
+            };
+        case 'LOCATION_LOADING':
+            return {
+                loading: true
             };
         case 'LOCATION_DISABLED':
             return {
@@ -59,6 +69,6 @@ export const locationReducer = (state, action) => {
                 error: true
             }
         default:
-            return state || locationInitial;
+            return state
     }
 }
