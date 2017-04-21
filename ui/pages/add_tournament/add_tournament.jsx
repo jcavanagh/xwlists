@@ -1,137 +1,22 @@
 import React from 'react';
 import { Field, formValueSelector, reduxForm as ReduxForm } from 'redux-form';
 
-import Dialog from 'material-ui/Dialog';
 import Divider from 'material-ui/Divider';
-import FlatButton from 'material-ui/FlatButton';
 import MenuItem from 'material-ui/MenuItem'
 import RaisedButton from 'material-ui/RaisedButton';
 import { Toolbar, ToolbarGroup, ToolbarTitle } from 'material-ui/Toolbar';
 
-import { SelectField, TextField, DatePicker } from 'redux-form-material-ui';
-
 import { LocationDisabled, LocationError, LocationLoading } from './location';
-import { Form, FormContainer, FormContainerDivider, FormHeader, FormFieldContainer, FormLabel, StyledCreatable, StyledSelect } from './styles';
-import TournamentPreview from './tournament_preview';
+import { Form, FormContainer, FormContainerDivider, FormHeader, FormFieldContainer, FormLabel } from './styles';
+import DataTable from 'components/data_table/data_table';
 import UploadHelpDialog from './upload_help_dialog';
 
 //Route wiring
-import Connect from 'helpers/connect';
+import Connect from 'components/connect/connect';
 import { routeAddTournamentActions } from 'redux/actions';
 
-class FormDatePicker extends React.Component {
-    onDateChange = (date) => {
-        //Format how backend wants it
-        const formatted = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-        this.props.input.onChange(formatted);
-    }
-
-    render() {
-        const { input: { value } } = this.props;
-        const asDate = value ? new Date(value) : new Date();
-        return (
-            <DatePicker {...this.props} hintText={this.props.label} container="inline" mode="landscape" autoOk={true} onChange={this.onDateChange} value={asDate} />
-        )
-    }
-}
-
-const FormTextField = (props) => (
-    <TextField
-        hintText={props.label}
-        hintStyle={{transition: 'none'}}
-        type={props.type}
-        underlineShow={false}
-        errorText={props.touched && props.error}
-        {...props}
-    />
-)
-
-class FormSelectField extends React.Component {
-    render() {
-        return (
-            <SelectField hintText={this.props.label} {...this.props} onChange={this.props.input.onChange} />
-        );
-    }
-}
-
-class FormReactSelectField extends React.Component {
-    render() {
-        const {input: {value, onBlur, onChange}, creatable, initialValue, ...props} = this.props;
-        const fieldValue = value || initialValue;
-        const Component = creatable ? StyledCreatable : StyledSelect;
-
-        return (
-            <Component
-                multi={true}
-                onBlur={() => onBlur(fieldValue)}
-                onChange={(newValue) => onChange(newValue ? newValue.value : null)}
-                value={fieldValue}
-                {...props} />
-        );
-    }
-}
-
-class FormFileField extends React.Component {
-    static defaultProps = {
-        onFileUploaded: (evt) => {}
-    }
-
-    constructor() {
-        super();
-        this.state = {
-            errorOpen: false
-        }
-    }
-
-    handleErrorClose = () => this.setState({errorOpen: false})
-
-    onFileUploaded = (evt) => {
-        try {
-            const parsed = JSON.parse(evt.target.result);
-            this.props.onFileUploaded(parsed);
-        } catch(e) {
-            this.setState({errorOpen: true});
-        }
-    }
-
-    onInputChange = (evt) => {
-        if(evt.target.files && evt.target.files.length) {
-            const file = evt.target.files[0];
-            let reader = new FileReader();
-            //TODO: Progress indicator?
-            reader.onload = this.onFileUploaded;
-            reader.readAsText(file);
-        }
-    }
-
-    componentDidMount = () => {
-        this._fileInput.addEventListener('change', this.onInputChange, false);
-    }
-
-    componentWillUnmount = () => {
-        this._fileInput.removeEventListener('change', this.onInputChange, false);
-    }
-
-    render() {
-        const actions = [
-            <RaisedButton
-                label="Close"
-                primary={true}
-                onTouchTap={this.handleErrorClose}
-            />
-        ];
-
-        return (
-            <RaisedButton containerElement="label" type="file" label="Cryodex Upload" primary={true}  onChange={this.onInputChange}>
-                <input type="file" style={{display: 'none'}} ref={(ref) => this._fileInput = ref} />
-                <Dialog title="Upload Failed!" actions={actions} modal={false} open={this.state.errorOpen} onRequestClose={this.handleErrorClose}>
-                    <p>Could not parse uploaded file!</p>
-                    <p>Please make sure the upload was valid JSON!</p>
-                </Dialog>
-            </RaisedButton>
-        );
-    }
-}
+//Fields
+import { FormDatePicker, FormFileField, FormTextField, FormSelectField, FormReactSelectField } from './fields';
 
 const FORM_NAME = 'addTourney';
 const selector = formValueSelector(FORM_NAME);
@@ -295,7 +180,7 @@ class AddTournament extends React.Component {
                 </FormHeader>
                 <FormContainer>
                     <Field name="tourney_report" component={FormFileField} onFileUploaded={this.setPreview} />
-                    <TournamentPreview fields={this.standingsFields} data={cryodexPreview.players} />
+                    <DataTable title="Upload Preview" fields={this.standingsFields} data={cryodexPreview.players} />
                 </FormContainer>
                 <Toolbar style={{flexDirection: 'row-reverse'}}>
                     <ToolbarGroup lastChild={true} >

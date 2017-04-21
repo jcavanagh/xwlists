@@ -24,9 +24,10 @@ const fetchRemote = (type, stateKey, url, payload) =>
     }
 
 //Basic Actions
-export const fetchSets = fetchRemote('FETCH_SETS', 'sets', '/api/v1/metadata/sets');
-export const fetchFormats = fetchRemote('FETCH_FORMATS', 'formats', '/api/v1/metadata/formats');
-export const fetchVenues = fetchRemote('FETCH_VENUES', 'venues', '/api/v1/venues');
+export const fetchSets = fetchRemote('FETCH_SETS', 'sets', '/api/v2/metadata/sets');
+export const fetchFormats = fetchRemote('FETCH_FORMATS', 'formats', '/api/v2/metadata/formats');
+export const fetchVenues = fetchRemote('FETCH_VENUES', 'venues', '/api/v2/venues');
+export const fetchTournaments = fetchRemote('FETCH_TOURNAMENTS', 'tournaments', '/api/v2/tournaments');
 
 //Locations
 const GEOCODE_API = 'http://nominatim.openstreetmap.org/reverse';

@@ -22,6 +22,7 @@ PLAYER1_ID = 'player1_id'
 PLAYERS = 'players'
 PLAYER = 'player'
 NEW_PLAYER_NAME = 'new_name'
+NUM_PLAYERS = 'num_players'
 BYE = 'bye'
 DRAW = 'draw'
 WIN = 'win'
@@ -731,6 +732,36 @@ LATITUDE  = "lat"
 LONGITUDE  = "lon"
 
 class TourneyToJsonConverter:
+    def convert_shallow(self, t):
+        tournament = {}
+        tournament[ID] = t.id
+        tournament[NAME] = t.get_tourney_name()
+        tournament[DATE] = str(t.tourney_date)
+        tournament[TYPE] = t.tourney_type
+        tournament[ROUND_LENGTH] = t.round_length
+        tournament[NUM_PLAYERS] = len(t.rankings)
+        if t.format is not None:
+            tournament[FORMAT] = t.format
+
+        if t.venue is not None:
+            v = t.venue
+            lon = v.longitude
+            lat = v.latitude
+            if lon is not None:
+                lon = str(lon)
+            if lat is not None:
+                lat = str(lat)
+            tournament[VENUE] = {
+                VENUE_NAME : decode(v.venue),
+                STATE      : decode(v.state),
+                CITY       : decode(v.city),
+                LATITUDE   : lat,
+                LONGITUDE  : lon,
+                COUNTRY    : decode(v.country)
+            }
+
+        return tournament
+
     def convert(self, t):
         tournament = {}
         ret = {}

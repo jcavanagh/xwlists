@@ -12,8 +12,14 @@ var loaders = [{
   loaders: ['babel-loader'],
   include: path.join(process.cwd(), 'ui')
 },{
+  test: require.resolve("react"),
+  loader: "expose-loader?React"
+},{
   test: require.resolve("react-dom"),
   loader: "expose-loader?ReactDOM"
+},{
+  test: require.resolve("react-addons-perf"),
+  loader: "expose-loader?Perf"
 },{
   test: /\.css$/,
   loaders: [ 'style-loader', 'css-loader' ]
@@ -51,6 +57,7 @@ var configs = {
         'webpack-dev-server/client?http://localhost:8080',
         'webpack/hot/dev-server',
         'babel-polyfill',
+        'react-addons-perf',
         './ui/xwlists.js'
       ]
     },
@@ -66,10 +73,6 @@ var shared = {
     path: path.join(process.cwd(), '/static'),
     filename: 'bundle.js',
     publicPath: '/static/'
-  },
-  externals: {
-    React: 'react',
-    ReactDOM: 'react-dom'
   },
   resolve: {
     modules: [path.resolve('./node_modules'), path.resolve('./ui')],

@@ -26,7 +26,6 @@ export const apiReducer = (state, action) => {
                 ...state,
                 formats: action.data
             };
-            return action.formats;
         case 'FETCH_VENUES':
             const venues = action.data ? action.data : [];
             return {
@@ -35,7 +34,12 @@ export const apiReducer = (state, action) => {
                 //For react-select
                 venuesList: venues.map(title => ({ value: title, label: title }))
             };
-            return action.formats;
+
+        case 'FETCH_TOURNAMENTS':
+            return {
+                ...state,
+                tournaments: action.data
+            }
         default:
             return state;
     }

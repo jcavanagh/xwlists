@@ -1601,6 +1601,9 @@ class PersistenceManager:
     def get_tourneys(self):
         return self.db_connector.get_session().query(Tourney)
 
+    def get_all_tourneys(self):
+        return self.db_connector.get_session().query(Tourney).all()
+
     def get_upgrades(self):
         return self.db_connector.get_session().query(Upgrade).all()
 

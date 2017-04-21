@@ -1,5 +1,5 @@
 import React from 'react';
-import Loading from './loading';
+import Loading from 'components/loading/loading';
 
 import { connect } from 'react-redux';
 
